@@ -1,9 +1,10 @@
 package com.example.conta.service;
 
-import com.example.conta.Enum.Moeda;
 import com.example.conta.model.Conta;
+import com.example.conta.model.Emprestimo;
 import com.example.conta.model.DTO.ContaDTO;
-import org.springframework.stereotype.Component;
+import com.example.conta.model.DTO.EmprestimoDTO;
+import com.example.conta.model.enums.MoedaEnum;
 
 import java.util.List;
 
@@ -14,8 +15,10 @@ public interface ContaService {
 
     Conta createConta(ContaDTO conta);
 
-    void realizarTransferencia(Conta contaOrigem, Conta contaDestino, double valor, Moeda moeda);
+    void realizarTransferencia(Conta contaOrigem, Conta contaDestino, double valor, MoedaEnum moeda);
 
+    Emprestimo solicitarEmprestimo(Long idConta, EmprestimoDTO emprestimoDTO) throws Exception;
+    
     void deleteConta(Long id);
 
 }
