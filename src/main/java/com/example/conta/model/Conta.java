@@ -1,8 +1,7 @@
 package com.example.conta.model;
 
+import com.example.conta.Enum.Moeda;
 import jakarta.persistence.*;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,6 +24,7 @@ public class Conta {
     private String tipoConta;
     private String numeroConta;
     private Date dataAberturaConta;
+    private Moeda moeda;
     private double saldoDolar;
     private double saldoReal;
     private String status;

@@ -1,6 +1,7 @@
 package com.example.conta.serviceImpl;
 
 
+import com.example.conta.Enum.Moeda;
 import com.example.conta.model.Conta;
 import com.example.conta.model.DTO.ContaDTO;
 import com.example.conta.model.DTO.TitularContaDTO;
@@ -37,6 +38,11 @@ public class ContaServiceImpl implements ContaService {
     }
 
     @Override
+    public Conta findByNumeroConta(String numeroConta) {
+        return contaRepository.findByNumeroConta(numeroConta);
+    }
+
+    @Override
     public Conta createConta(ContaDTO contaDTO) {
 
        Conta conta = new Conta();
@@ -62,6 +68,31 @@ public class ContaServiceImpl implements ContaService {
         conta.setTitulares(new HashSet<>(titularContas));
         return contaRepository.save(conta);
     }
+
+    @Override
+    public void realizarTransferencia(Conta contaOrigem, Conta contaDestino, double valor, Moeda moeda) {
+        if (moeda == Moeda.REAL) {
+            if (contaOrigem.getSaldoReal() >= valor) {
+                contaOrigem.setSaldoReal(contaOrigem.getSaldoReal() - valor);
+                contaDestino.setSaldoReal(contaDestino.getSaldoReal() + valor);
+            } else {
+                throw new RuntimeException("Saldo insuficiente na conta de origem.");
+            }
+        } else if (moeda == Moeda.DOLAR) {
+            if (contaOrigem.getSaldoDolar() >= valor) {
+                contaOrigem.setSaldoDolar(contaOrigem.getSaldoDolar() - valor);
+                contaDestino.setSaldoDolar(contaDestino.getSaldoDolar() + valor);
+            } else {
+                throw new RuntimeException("Saldo insuficiente em dólares na conta de origem.");
+            }
+        } else {
+            throw new RuntimeException("Moeda não suportada.");
+        }
+
+        contaRepository.save(contaOrigem);
+        contaRepository.save(contaDestino);
+    }
+
 
     @Override
     public void deleteConta(Long id) {
