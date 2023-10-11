@@ -115,7 +115,10 @@ public class ContaServiceImpl implements ContaService {
     @Override
     public Emprestimo solicitarEmprestimo(Long idConta, EmprestimoDTO emprestimoDTO) throws Exception {
         Conta conta = contaRepository.findById(idConta).orElse(null);
-        Conta contaRoot = contaRepository.findByNumeroConta("ROOT123").orElse(null);
+        Conta contaRoot = contaRepository.findByNumeroConta(contaBanco).orElse(null);
+        if (idConta == contaRoot.getId()) {
+        	 throw new Exception("Não e possivel realizar emprestimo com essa conta!");
+		}
 
         if (conta != null && emprestimoDTO.getValor() > 0) {
             Emprestimo emprestimo = new Emprestimo();
