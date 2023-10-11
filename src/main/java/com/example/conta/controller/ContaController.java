@@ -2,6 +2,10 @@ package com.example.conta.controller;
 
 import java.util.List;
 
+import com.example.conta.model.Conta;
+import com.example.conta.model.DTO.CambioDTO;
+import com.example.conta.model.DTO.ContaDTO;
+import com.example.conta.service.ContaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -58,7 +62,7 @@ public class ContaController {
     public void deleteConta(@PathVariable Long id) {
         contaService.deleteConta(id);
     }
-    
+
     @PostMapping("/{id}/emprestimos")
     public ResponseEntity<Emprestimo> solicitarEmprestimo(@PathVariable Long id, @RequestBody EmprestimoDTO emprestimoDTO) {
         try {
@@ -85,6 +89,12 @@ public class ContaController {
         contaService.realizarTransferencia(contaOrigem, contaDestino, valor, moeda);
 
         return ResponseEntity.ok("Transferência realizada com sucesso.");
+    }
+
+    @PostMapping("/solicitarCambio")
+    public ResponseEntity<CambioDTO> solicitarCambio(@RequestBody CambioDTO cambioDTO) {
+        CambioDTO cambio = contaService.solicitarCambio(cambioDTO);
+        return new ResponseEntity<CambioDTO>(cambio, HttpStatus.OK);
     }
 
 }
