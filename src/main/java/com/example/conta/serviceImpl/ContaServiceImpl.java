@@ -3,6 +3,7 @@ package com.example.conta.serviceImpl;
 
 import com.example.conta.model.Conta;
 import com.example.conta.model.Emprestimo;
+import com.example.conta.model.DTO.CambioDTO;
 import com.example.conta.model.DTO.ContaDTO;
 import com.example.conta.model.DTO.EmprestimoDTO;
 import com.example.conta.model.DTO.TitularContaDTO;
@@ -12,7 +13,11 @@ import com.example.conta.repository.ContaRepository;
 import com.example.conta.repository.EmprestimoRepository;
 import com.example.conta.service.ContaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -20,6 +25,12 @@ import java.util.List;
 
 @Service
 public class ContaServiceImpl implements ContaService {
+
+    @Value("${dollar.brlValue}")
+    private String priceValue;
+
+    @Value("${contaBanco.numeroConta}")
+    private String contaBanco;
 
     private final ContaRepository contaRepository;
     private final TitularContaServiceImpl titularContaServiceImpl;
@@ -142,5 +153,69 @@ public class ContaServiceImpl implements ContaService {
     @Override
     public void deleteConta(Long id) {
         contaRepository.deleteById(id);
+    }
+
+    @Override
+    public CambioDTO solicitarCambio(CambioDTO cambioDTO) throws RuntimeException{
+        BigDecimal dollarAmmount = BigDecimal.valueOf(0.0);;
+        BigDecimal realAmmount = BigDecimal.valueOf(0.0);
+        BigDecimal returnValue = BigDecimal.ZERO;
+
+        BigDecimal price =  getPrice();
+
+        CambioDTO cambio = new CambioDTO();
+        cambio.setNumeroConta(cambioDTO.getNumeroConta());
+
+        Conta contaCliente = findByNumeroConta(cambio.getNumeroConta());
+        Conta contaBanco = findByNumeroConta(getContaBanco());
+
+        if (cambioDTO.getMoeda().equals(MoedaEnum.REAL)){
+            realAmmount = cambioDTO.getValor();
+            dollarAmmount = realAmmount.divide(price,2, RoundingMode.HALF_UP);
+            cambio.setMoeda(MoedaEnum.DOLAR);
+
+            //Realiza transferencia de real do cliente para o banco
+            realizarTransferencia(contaCliente,contaBanco,realAmmount.doubleValue(),cambioDTO.getMoeda());
+
+            //Realiza transferencia de dolar do banco para o cliente
+            realizarTransferencia(contaBanco, contaCliente,dollarAmmount.doubleValue(),cambio.getMoeda());
+
+            returnValue = dollarAmmount;
+        } else {
+            dollarAmmount = cambioDTO.getValor();
+            realAmmount = dollarAmmount.multiply(price).setScale(2,RoundingMode.HALF_UP);
+            cambio.setMoeda(MoedaEnum.REAL);
+
+            //Realiza transferencia de dolar do cliente para o banco
+            realizarTransferencia(contaCliente,contaBanco,dollarAmmount.doubleValue(),cambioDTO.getMoeda());
+
+            //Realiza transferencia de real do banco para o cliente
+            realizarTransferencia(contaBanco, contaCliente,realAmmount.doubleValue(),cambio.getMoeda());
+
+            returnValue = realAmmount;
+        }
+
+        cambio.setValor(returnValue);
+
+        return cambio;
+    }
+
+    private String getContaBanco() {
+        if (contaBanco!=null){
+            return contaBanco;
+        }
+        return "1";
+    }
+
+    private BigDecimal getPrice() {
+        BigDecimal price = new BigDecimal(5);
+        if(priceValue!= null) {
+            try {
+                price = new BigDecimal(priceValue);
+            } catch (NumberFormatException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return price;
     }
 }
