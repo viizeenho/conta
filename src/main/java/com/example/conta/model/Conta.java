@@ -24,6 +24,7 @@ public class Conta {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+	@Column(name = "tipoConta")
 	private String tipoConta;
 	private String numeroConta;
 	private Date dataAberturaConta;

@@ -9,7 +9,6 @@ import java.util.List;
 @AllArgsConstructor
 @Setter
 @Getter
-
 public class ContaDTO {
     private String tipoConta;
     private String numeroConta;

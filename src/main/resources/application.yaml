@@ -19,9 +19,14 @@ spring:
       enabled: true
       path: /h2-console
   jpa:
+    defer-datasource-initialization: true
     hibernate:
       ddl-auto: update
     show-sql: true
+    sql:
+      init:
+        mode: always
+
 
 
 

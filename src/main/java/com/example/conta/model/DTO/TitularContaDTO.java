@@ -9,8 +9,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class TitularContaDTO {
-    private String nome;
     private String cpfCnpj;
-
 }
 

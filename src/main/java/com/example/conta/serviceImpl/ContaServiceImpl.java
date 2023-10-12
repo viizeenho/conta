@@ -2,16 +2,17 @@ package com.example.conta.serviceImpl;
 
 
 import com.example.conta.model.Conta;
+import com.example.conta.model.DTO.*;
 import com.example.conta.model.Emprestimo;
-import com.example.conta.model.DTO.CambioDTO;
-import com.example.conta.model.DTO.ContaDTO;
-import com.example.conta.model.DTO.EmprestimoDTO;
-import com.example.conta.model.DTO.TitularContaDTO;
-import com.example.conta.model.enums.MoedaEnum;
 import com.example.conta.model.TitularConta;
+import com.example.conta.model.enums.MoedaEnum;
 import com.example.conta.repository.ContaRepository;
 import com.example.conta.repository.EmprestimoRepository;
 import com.example.conta.service.ContaService;
+import com.example.conta.service.TitularContaClient;
+import lombok.AccessLevel;
+import lombok.Data;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -21,8 +22,11 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 
 
+@Data
+@Getter(AccessLevel.PRIVATE)
 @Service
 public class ContaServiceImpl implements ContaService {
 
@@ -35,12 +39,14 @@ public class ContaServiceImpl implements ContaService {
     private final ContaRepository contaRepository;
     private final TitularContaServiceImpl titularContaServiceImpl;
     private final EmprestimoRepository emprestimoRepository;
+    private final TitularContaClient titularContaClient;
 
     @Autowired
-    public ContaServiceImpl(ContaRepository contaRepository, TitularContaServiceImpl titularContaServiceImpl, EmprestimoRepository emprestimoRepository) {
+    public ContaServiceImpl(ContaRepository contaRepository, TitularContaServiceImpl titularContaServiceImpl, EmprestimoRepository emprestimoRepository, TitularContaClient titularContaClient) {
         this.contaRepository = contaRepository;
         this.titularContaServiceImpl = titularContaServiceImpl;
         this.emprestimoRepository = emprestimoRepository;
+        this.titularContaClient = titularContaClient;
     }
 
     @Override
@@ -75,11 +81,16 @@ public class ContaServiceImpl implements ContaService {
 
        List<TitularConta> titularContas = new ArrayList<>();
 
+
+
        if (contaDTO.getTitulares() != null){
            for (TitularContaDTO titularContaDTO : contaDTO.getTitulares()){
                TitularConta titularConta = new TitularConta();
-               titularConta.setNome(titularContaDTO.getNome());
-               titularConta.setCpfCnpj(titularContaDTO.getCpfCnpj());
+
+               ResponseDTO<ClientDTO> titularInfo = titularContaClient.findByDocument(titularContaDTO.getCpfCnpj());
+
+               titularConta.setNome(titularInfo.getData().getNome());
+               titularConta.setCpfCnpj(titularInfo.getData().getCpf());
                titularConta.setConta(conta);
                titularContas.add(titularConta);
            }
@@ -200,13 +211,6 @@ public class ContaServiceImpl implements ContaService {
         return cambio;
     }
 
-    private String getContaBanco() {
-        if (contaBanco!=null){
-            return contaBanco;
-        }
-        return "1";
-    }
-
     private BigDecimal getPrice() {
         BigDecimal price = new BigDecimal(5);
         if(priceValue!= null) {
@@ -218,4 +222,5 @@ public class ContaServiceImpl implements ContaService {
         }
         return price;
     }
+
 }

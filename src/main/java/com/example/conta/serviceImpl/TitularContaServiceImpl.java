@@ -10,6 +10,7 @@ public class TitularContaServiceImpl implements TitularContaService {
 
     private final TitularContaRepository titularContaRepository;
 
+
     public TitularContaServiceImpl(TitularContaRepository titularContaRepository) {
         this.titularContaRepository = titularContaRepository;
     }
